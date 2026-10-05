@@ -6,7 +6,7 @@ import * as R from './rules.js';
 
 const LANE_W = 0.7, LANES = 4, BAY_W = LANE_W * LANES, BAYS = 12, LEVEL_H = 0.85, LEVELS = 4, DEPTH = 1.2, ROW_GAP = 3.4;
 const ROWS = ['A', 'B', 'C', 'D', 'E', 'F'];
-export const LIFE_COLORS = { Active: '#2e9e66', 'Phase-in': '#3a6fd8', 'Run-out': '#e08a2b', Inactive: '#8391a7', Obsolete: '#9b5532', none: '#b8c0cc' };
+export const LIFE_COLORS = { Active: '#2e9e66', 'Phase-in': '#3a6fd8', 'Run-out': '#e08a2b', Inactive: '#4f5d75', Obsolete: '#9b5532', none: '#b8c0cc' };
 export const DOH_COLORS = { RED: '#d64545', GREEN: '#2e9e66', ORANGE: '#e08a2b', NEEDS_REVIEW: '#8a5cd6', EXCLUDED: '#b8c0cc', NONE: '#b8c0cc' };
 
 const cssVar = (name, fallback) => getComputedStyle(document.documentElement).getPropertyValue(name).trim() || fallback;
@@ -119,7 +119,7 @@ export function mount(el, data, opts = {}) {
     boxes.forEach((b, i) => {
       const s = statusOf(b.partNo);
       col.set(mode === 'doh' ? DOH_COLORS[s.doh] : LIFE_COLORS[s.life]);
-      if (highlight && !highlight.has(b.partNo)) col.lerp(dim, 0.82);
+      if (highlight && !highlight.has(b.partNo)) col.lerp(dim, 0.9);
       if (selected === b.partNo) col.set('#ffc93c'); // selection is always the same bright yellow
       inst.setColorAt(i, col);
     });

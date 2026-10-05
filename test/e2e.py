@@ -43,6 +43,10 @@ with sync_playwright() as p:
     pg.route('**/fonts.g*/**', fonts)
     go = lambda h: (pg.goto(f'{BASE}#{h}'), pg.wait_for_timeout(1200))
     main_text = lambda: pg.locator('main').inner_text()
+    def shot(name):  # clean screenshot: no toasts, top of page
+        pg.evaluate("document.querySelectorAll('.toast').forEach(t => t.remove()); window.scrollTo(0, 0)")
+        pg.wait_for_timeout(300)
+        pg.screenshot(path=str(SHOTS / name))
 
     # S1 overview
     go('overview')
@@ -52,7 +56,7 @@ with sync_playwright() as p:
     pg.wait_for_timeout(1500)
     check('S1 3D preview canvas rendered', pg.locator('#ov3d canvas').count() == 1)
     check('no literal "null" text on overview', 'null' not in t)
-    pg.screenshot(path=str(SHOTS / '01-overview.png'))
+    shot('01-overview.png')
 
     # S10 imports
     go('imports')
@@ -61,7 +65,7 @@ with sync_playwright() as p:
     check('S10 IM-02: 5 corrected, 2 rejected', '5 corrected' in t and '2 rejected' in t, t[:200])
     check('S10 IM-02: lost-digit reason shown', 'lost digits' in t)
     check('no literal "null" text on imports', '\nnull\n' not in t)
-    pg.screenshot(path=str(SHOTS / '02-imports.png'))
+    shot('02-imports.png')
     pg.get_by_role('button', name='IM-07').first.click(); pg.wait_for_timeout(1200)
     t = main_text()
     check('S10 IM-07 blocked (shifted columns)', 'Blocked.' in t and 'columns may be shifted' in t)
@@ -80,7 +84,7 @@ with sync_playwright() as p:
     check('S2 PF-07 read from PDF text layer', 'Stackability' in t and '2/1' in t)
     check('S2 PF-07 auto-fills stack and weight', 'Auto-filled (3)' in t, t[t.find('Auto-filled'):t.find('Auto-filled') + 40])
     check('S2 PDF preview rendered', pg.locator('canvas.pdf-canvas').count() == 1)
-    pg.screenshot(path=str(SHOTS / '03-forms.png'))
+    shot('03-forms.png')
     pg.get_by_role('button', name='Apply 3 change(s)').click(); pg.wait_for_timeout(600)
     check('S2 apply PF-07', 'This form has been applied.' in main_text())
     pg.get_by_role('button', name='PF-02').first.click(); pg.wait_for_timeout(1500)
@@ -95,7 +99,7 @@ with sync_playwright() as p:
     go('fixes')
     t = main_text()
     check('S3 lists all three error types', 'Weight typed in kg (6)' in t and 'Swapped dimensions (2 pairs)' in t and 'Trailer stack fixed' in t)
-    pg.screenshot(path=str(SHOTS / '04-fixes.png'))
+    shot('04-fixes.png')
     pg.get_by_role('button', name='Apply').filter(has_text='corrections').click(); pg.wait_for_timeout(1000)
     check('S3 after apply: no systematic errors left', 'No systematic errors left' in main_text())
     pg.get_by_role('button', name='Add 2 Tier A service rows').click(); pg.wait_for_timeout(800)
@@ -108,7 +112,7 @@ with sync_playwright() as p:
     check('S5 shows cycle and fork tie for review', 'Cycle' in t and 'Fork tie' in t)
     pg.get_by_role('button', name='Run sync review').click(); pg.wait_for_timeout(500)
     check('S5 sync preview lists warehouse copy', 'warehouse' in main_text())
-    pg.screenshot(path=str(SHOTS / '05-supersession.png'))
+    shot('05-supersession.png')
     pg.get_by_role('button', name='Apply reviewed changes').click(); pg.wait_for_timeout(800)
     pg.get_by_role('button', name='Run sync review').click(); pg.wait_for_timeout(500)
     check('S5 after apply nothing left to sync', 'Nothing to copy' in main_text())
@@ -118,21 +122,22 @@ with sync_playwright() as p:
     t = main_text()
     check('S6 obsolete list includes typo marks', 'OBSL' in t and 'OBSOLTE' in t)
     check('S6 planning delta shown', 'Added today (4)' in t and 'Dropped today (4)' in t)
-    pg.screenshot(path=str(SHOTS / '06-lifecycle.png'))
+    shot('06-lifecycle.png')
 
     # S7 warehouse
     go('warehouse'); pg.wait_for_timeout(2500)
     t = main_text()
     check('S7 slot reallocation lists lanes', 'lanes held by' in t)
     check('S7 3D canvas rendered', pg.locator('.wh-canvas canvas').count() == 1)
+    shot('07a-highbay.png')
     pg.locator('.slot-list a.pn').first.click(); pg.wait_for_timeout(1500)
     check('S7 clicking a slot row shows the part', 'Boxes / lane' in main_text())
-    pg.screenshot(path=str(SHOTS / '07-warehouse.png'))
+    shot('07-warehouse.png')
 
     # S9 showcase
     pg.get_by_role('button', name='Start showcase (TV)').click(); pg.wait_for_timeout(3500)
     check('S9 showcase opens with a Red part first', pg.locator('.showcase .sc-card .badge').first.inner_text() == 'Red')
-    pg.screenshot(path=str(SHOTS / '08-showcase.png'))
+    shot('08-showcase.png')
     pg.keyboard.press('Escape'); pg.wait_for_timeout(500)
     check('S9 Esc closes showcase', pg.locator('.showcase').count() == 0)
 
@@ -144,7 +149,7 @@ with sync_playwright() as p:
     check('S8 lookup shows packaging, status and location', 'Packaging (PFEP)' in t and 'Where & who' in t)
     go('lookup/' + pg.locator('main .chips a').nth(1).get_attribute('href').split('/')[-1])
     check('S8 swapped-dims part was fixed earlier → sources agree', 'Sources agree' in main_text())
-    pg.screenshot(path=str(SHOTS / '09-lookup.png'))
+    shot('09-lookup.png')
 
     # persistence + reset
     pg.reload(); pg.wait_for_timeout(1200)

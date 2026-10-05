@@ -116,7 +116,7 @@ export function warehouse(root, ctx) {
   const legend = h('div', { class: 'legend' });
   let view = null;
   const drawLegend = () => {
-    const items = whView.mode === 'life' ? [['Active', '#2e9e66'], ['Phase-in', '#3a6fd8'], ['Run-out', '#e08a2b'], ['Inactive', '#8391a7'], ['Obsolete', '#9b5532'], ['Not on plan', '#b8c0cc']]
+    const items = whView.mode === 'life' ? [['Active', '#2e9e66'], ['Phase-in', '#3a6fd8'], ['Run-out', '#e08a2b'], ['Inactive', '#4f5d75'], ['Obsolete', '#9b5532'], ['Not on plan', '#b8c0cc']]
       : [['Red', '#d64545'], ['Green', '#2e9e66'], ['Orange (excess)', '#e08a2b'], ['Needs review', '#8a5cd6'], ['Excluded / not on plan', '#b8c0cc']];
     fill(legend, ...items.map(([t, c]) => h('span', {}, h('i', { style: { background: c } }), t)));
   };
