@@ -359,7 +359,8 @@ export function resolveChains(sq01) {
 }
 
 // ---------- R10 old/new sync: review (no save) then apply ----------
-export const SYNC_FIELDS = ['puType', 'puL', 'puW', 'puH', 'partsPerPu', 'puPerHu', 'huL', 'huW', 'huH', 'huType', 'stackTrailer', 'stackWarehouse', 'weightG', 'tarePu', 'grossPu', 'grossHu', 'moq', 'returnable', 'supplierCode', 'supplierName'];
+// `returnable` is not synced: blank means "one-way packaging", not "missing".
+export const SYNC_FIELDS = ['puType', 'puL', 'puW', 'puH', 'partsPerPu', 'puPerHu', 'huL', 'huW', 'huH', 'huType', 'stackTrailer', 'stackWarehouse', 'weightG', 'tarePu', 'grossPu', 'grossHu', 'moq', 'supplierCode', 'supplierName'];
 export function syncReview(data) {
   const { chains } = resolveChains(data.sq01);
   const byPn = new Map(data.pkg.map((r) => [r.partNo, r]));

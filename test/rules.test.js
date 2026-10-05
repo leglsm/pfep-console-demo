@@ -76,6 +76,9 @@ test('R10 sync review saves nothing; apply fills both ways and copies the locati
   assert.ok(wh2.some((w) => w.material === P.sync.whCopy.old), 'old row kept');
   assert.ok(pkg2.find((r) => r.partNo === P.sync.whCopy.old).tags.includes(`old → ${P.sync.whCopy.new}`));
   assert.ok(report.length >= P.sync.fill.length + 1);
+  assert.ok(!report.some((x) => x.field === 'returnable'), 'blank returnable means one-way packaging — never synced');
+  const again = R.syncReview({ ...data, pkg: pkg2, wh: wh2 }).report;
+  assert.equal(again.length, 0, 'applying the review leaves nothing to sync');
 });
 
 test('R11 lifecycle: obsolete wins, receipts are not usage, unconfirmed open orders flagged, all four quadrants filled', () => {

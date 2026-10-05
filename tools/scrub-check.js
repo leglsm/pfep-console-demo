@@ -20,11 +20,31 @@ const textOf = (f) => {
   }
   return readFileSync(f, 'utf8');
 };
+// Vendored libraries are not term-scanned (minified third-party code trips short names);
+// instead they must be byte-identical to the pinned npm package, so nothing of ours can hide in them.
+const VENDORED = {
+  'lib/pdf.min.mjs': 'node_modules/pdfjs-dist/build/pdf.min.mjs',
+  'lib/pdf.worker.min.mjs': 'node_modules/pdfjs-dist/build/pdf.worker.min.mjs',
+  'lib/three.module.min.js': 'node_modules/three/build/three.module.min.js',
+  'lib/OrbitControls.js': 'node_modules/three/examples/jsm/controls/OrbitControls.js',
+  'lib/xlsx.full.min.js': 'node_modules/xlsx/dist/xlsx.full.min.js',
+  'lib/LICENSE.pdfjs.txt': 'node_modules/pdfjs-dist/LICENSE',
+  'lib/LICENSE.three.txt': 'node_modules/three/LICENSE',
+  'lib/LICENSE.sheetjs.txt': 'node_modules/xlsx/LICENSE',
+};
 let hits = 0;
+for (const [f, src] of Object.entries(VENDORED)) {
+  if (!files.includes(f)) continue;
+  let a, b;
+  try { a = readFileSync(f, 'utf8'); b = readFileSync(src, 'utf8'); } catch (e) { console.log(`UNVERIFIED ${f}: ${e.message.split('\n')[0]} (run npm install)`); hits++; continue; }
+  if (f === 'lib/OrbitControls.js') b = b.replace("from 'three'", "from './three.module.min.js'"); // the one intended edit
+  if (a !== b) { console.log(`MODIFIED ${f}: differs from ${src}`); hits++; }
+}
 for (const f of files) {
+  if (f in VENDORED) continue;
   let text;
   try { text = textOf(f).toLowerCase(); } catch (e) { console.log(`UNREADABLE ${f}: ${e.message.split('\n')[0]}`); hits++; continue; } // unreadable never passes
   for (const { t, re } of res) if (re.test(text)) { console.log(`HIT ${f}: "${t}"`); hits++; }
 }
-console.log(hits ? `${hits} hit(s) — do not push` : `0 hits across ${files.length} files, ${terms.length} terms`);
+console.log(hits ? `${hits} hit(s) — do not push` : `0 hits across ${files.length} files, ${terms.length} terms (${Object.keys(VENDORED).length} vendored files verified unchanged)`);
 process.exit(hits ? 1 : 0);

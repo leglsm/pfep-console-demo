@@ -8,10 +8,13 @@
     "test": "node --test test/*.test.js",
     "make:forms": "node tools/make-forms.js",
     "make:imports": "node tools/make-imports.js",
-    "scrub": "node tools/scrub-check.js"
+    "scrub": "node tools/scrub-check.js",
+    "e2e": "python3 test/e2e.py"
   },
   "devDependencies": {
     "pdf-lib": "1.17.1",
+    "pdfjs-dist": "^4.10.38",
+    "three": "^0.170.0",
     "xlsx": "0.18.5"
   }
 }

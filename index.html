@@ -1,0 +1,37 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>PFEP Console · demo</title>
+<meta name="description" content="Package database (PFEP) console demo: rule-based form ingest, spreadsheet validation, supersession, part lifecycle 2×2 and a 3D high-bay warehouse. Fictional data.">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect x='3' y='9' width='12' height='10' rx='1.5' fill='%233a6fd8'/%3E%3Crect x='17' y='9' width='12' height='10' rx='1.5' fill='%23e08a2b'/%3E%3Crect x='3' y='21' width='26' height='3' rx='1' fill='%2364748b'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
+<link rel="stylesheet" href="src/style.css">
+<script src="lib/xlsx.full.min.js" defer></script>
+<script type="module" src="src/app.js"></script>
+</head>
+<body>
+<a class="skip" href="#main">Skip to content</a>
+<header class="top">
+  <div class="brand">
+    <span class="logo" aria-hidden="true"></span>
+    <div>
+      <div class="brand-name">PFEP Console</div>
+      <div class="brand-sub" id="asof">Loading…</div>
+    </div>
+  </div>
+  <div class="top-right">
+    <span class="badge b-muted">Fictional data</span>
+    <button class="icon-btn" id="btn-theme" type="button" aria-label="Toggle light or dark theme">◐</button>
+  </div>
+</header>
+<nav class="nav" id="nav" aria-label="Screens"></nav>
+<main id="main" tabindex="-1"><p class="muted">Loading sample data…</p></main>
+<footer class="foot">
+  Demo by Daniel Lee · <a href="https://github.com/leglsm/pfep-console-demo">source</a> · <a href="https://leglsm.github.io/portfolio/">portfolio</a> · all companies, people and part numbers are fictional
+</footer>
+</body>
+</html>

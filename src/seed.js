@@ -449,13 +449,17 @@ export function makeSeed(seed = SEED) {
   // ===== Warehouse locations =====
   const wh = [];
   const hbRows = ['A', 'B', 'C', 'D', 'E', 'F'];
-  let slot = 0, lane = 1;
+  // Locations are filled in a shuffled order so parts spread across all rows, as in a real high-bay.
+  const order = Array.from({ length: hbRows.length * 12 * 4 }, (_, i) => i);
+  for (let i = order.length - 1; i > 0; i--) { const j = Math.floor(rnd() * (i + 1)); [order[i], order[j]] = [order[j], order[i]]; }
+  let ptr = 0, lane = 1;
   const placeHB = (r, lanes) => {
     for (;;) {
-      if (slot >= hbRows.length * 12 * 4) return false;
+      if (ptr >= order.length) return false;
       if (lane + lanes - 1 <= 4) break;
-      slot++; lane = 1;
+      ptr++; lane = 1;
     }
+    const slot = order[ptr];
     const row = hbRows[Math.floor(slot / 48)], bay = Math.floor((slot % 48) / 4) + 1, level = (slot % 4) + 1;
     wh.push({ material: r.partNo, area: 'HIGHBAY', row, bay, level, lane, lanes, tray: '', lineside: '' });
     lane += lanes;
