@@ -1,0 +1,17 @@
+{
+  "name": "pfep-console-demo",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Package Database Console (PFEP) demo — fictional data",
+  "scripts": {
+    "test": "node --test test/*.test.js",
+    "make:forms": "node tools/make-forms.js",
+    "make:imports": "node tools/make-imports.js",
+    "scrub": "node tools/scrub-check.js"
+  },
+  "devDependencies": {
+    "pdf-lib": "1.17.1",
+    "xlsx": "0.18.5"
+  }
+}

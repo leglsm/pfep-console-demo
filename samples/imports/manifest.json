@@ -1,0 +1,115 @@
+[
+  {
+    "file": "IM-01_matplan_clean.xlsx",
+    "target": "matplan",
+    "title": "Clean planning export",
+    "expect": {
+      "blocked": false,
+      "rejected": 0,
+      "coerced": 0,
+      "ok": 30
+    }
+  },
+  {
+    "file": "IM-02_matplan_part-numbers.xlsx",
+    "target": "matplan",
+    "title": "Part numbers turned into numbers / scientific notation",
+    "expect": {
+      "blocked": false,
+      "rejected": 2,
+      "coerced": 5,
+      "rejectedRows": [
+        10,
+        16
+      ],
+      "coercedRows": [
+        4,
+        6,
+        8,
+        12,
+        14
+      ]
+    }
+  },
+  {
+    "file": "IM-03_openorders_renamed-headers.xlsx",
+    "target": "openorders",
+    "title": "Renamed, reordered headers under a title row",
+    "expect": {
+      "blocked": false,
+      "rejected": 0,
+      "coerced": 0,
+      "ok": 30,
+      "headerRow": 3,
+      "unknownColumns": [
+        "Planner Note"
+      ]
+    }
+  },
+  {
+    "file": "IM-04_vendors_missing-column.xlsx",
+    "target": "vendors",
+    "title": "Vendor number column missing",
+    "expect": {
+      "blocked": true,
+      "missingColumns": [
+        "vendorNo"
+      ]
+    }
+  },
+  {
+    "file": "IM-05_mb51_dates-and-numbers.xlsx",
+    "target": "mb51",
+    "title": "Mixed date formats, numbers stored as text",
+    "expect": {
+      "blocked": false,
+      "rejected": 2,
+      "coerced": 7,
+      "skipped": 2,
+      "rejectedRows": [
+        11,
+        17
+      ],
+      "ambiguousRows": [
+        7
+      ]
+    }
+  },
+  {
+    "file": "IM-06_wh_duplicates.xlsx",
+    "target": "wh",
+    "title": "Duplicate part rows (identical and conflicting)",
+    "expect": {
+      "blocked": false,
+      "rejected": 2,
+      "rejectedRows": [
+        13,
+        14
+      ],
+      "mergedRows": [
+        8
+      ]
+    }
+  },
+  {
+    "file": "IM-07_matplan_shifted-columns.xlsx",
+    "target": "matplan",
+    "title": "Columns shifted on half the rows",
+    "expect": {
+      "blocked": true,
+      "rejected": 10,
+      "reasonIncludes": "rejected"
+    }
+  },
+  {
+    "file": "IM-08_vendors_leading-zeros.xlsx",
+    "target": "vendors",
+    "title": "Vendor numbers lost their leading zeros",
+    "expect": {
+      "blocked": false,
+      "rejected": 0,
+      "coerced": 10,
+      "ok": 10
+    }
+  }
+]

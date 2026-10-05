@@ -1,0 +1,42 @@
+[
+  {
+    "file": "PF-01_blank-fields.pdf",
+    "partNo": "23733676",
+    "case": "AUTOFILL"
+  },
+  {
+    "file": "PF-02_signed-change.pdf",
+    "partNo": "24953036",
+    "case": "SIGNED_CONFLICT"
+  },
+  {
+    "file": "PF-03_unsigned.pdf",
+    "partNo": "29428505",
+    "case": "UNSIGNED_HELD"
+  },
+  {
+    "file": "PF-04_no-dim-units.pdf",
+    "partNo": "25884598",
+    "case": "UNIT_CHECK"
+  },
+  {
+    "file": "PF-05_supplier-variant.pdf",
+    "partNo": "26441672",
+    "case": "SUPPLIER_MATCH"
+  },
+  {
+    "file": "PF-06_new-part.pdf",
+    "partNo": "21765268",
+    "case": "NEW_ROW"
+  },
+  {
+    "file": "PF-07_stack-and-kg.pdf",
+    "partNo": "26037855",
+    "case": "CONVERSIONS"
+  },
+  {
+    "file": "PF-08_unknown-supplier.pdf",
+    "partNo": "23483336",
+    "case": "SUPPLIER_CHECK"
+  }
+]
