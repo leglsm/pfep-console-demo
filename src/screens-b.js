@@ -3,6 +3,7 @@ import * as R from './rules.js';
 import { state, commit } from './state.js';
 import { quadrant } from './screens-a.js';
 import { h, fill, fmt, badge, lifeBadge, dohBadge, pnLink, table, empty, section, toast, steps } from './ui.js';
+import { startShowcase, openPartShowcase } from './showcase.js';
 
 const D = () => state.data;
 const cfg = () => state.data.config;
@@ -141,10 +142,10 @@ export function warehouse(root, ctx) {
     h('div', { class: 'toolbar' },
       seg([['life', 'Color: lifecycle'], ['doh', 'Color: DOH status']], 'mode', (v) => { view?.setMode(v); drawLegend(); }),
       h('label', { class: 'check' }, h('input', { type: 'checkbox', checked: whView.slots, onchange: (e) => { whView.slots = e.target.checked; view?.setHighlight(whView.slots ? slotSet : null); } }), 'Highlight lanes that can be freed'),
-      h('button', { class: 'btn', onclick: () => startShowcase(ctx) }, 'Start showcase (TV)')),
+      h('button', { class: 'btn', onclick: () => startShowcase({ gesture: true }) }, 'Start showcase (TV)')),
     legend,
     h('div', { class: 'wh-layout' },
-      h('div', {}, canvasBox, h('p', { class: 'muted small' }, `High-bay rows A–F, 12 bays × 4 levels × 4 lanes. One part per lane; boxes per lane = min(${cfg().maxStack}, ${cfg().levelHeightIn}" ÷ PU height). VLM tower on the right.`)),
+      h('div', {}, canvasBox, h('p', { class: 'muted small' }, `Lines A | B, C | D, E | F (back-to-back racks, 9 ft aisles), 24 bays × 4 lanes on level 1. One part per lane; boxes per lane = min(${cfg().maxStack}, ${cfg().levelHeightIn}" ÷ PU height). Levels 2–5 are pallet storage (shown full in the showcase). VLM towers V1–V3 on the right.`)),
       h('div', {},
         section('Slot reallocation', `${slots.lanes} lanes held by ${slots.rows.length} obsolete or inactive parts. Listed with the reason — the move plan stays a person's call.`,
           h('div', { class: 'slot-list' }, table([
@@ -161,49 +162,8 @@ export function warehouse(root, ctx) {
     v.setHighlight(whView.slots ? slotSet : null);
     v.onPick((pn) => showInfo(pn));
     v.onHover((pn) => { if (pn && pn !== '__VLM__') { tip.hidden = false; tip.textContent = `${pn} · ${R.whLabel(d.wh.find((w) => w.material === pn))}`; } else tip.hidden = true; });
-    if (ctx.param === 'showcase') startShowcase(ctx);
+    if (ctx.param === 'showcase') startShowcase({});
   });
-}
-
-async function startShowcase(ctx) {
-  const d = D();
-  const order = R.showcaseOrder(d, cfg(), d.asOf);
-  const byPn = new Map(d.pkg.map((r) => [r.partNo, r]));
-  const overlay = h('div', { class: 'showcase', role: 'dialog', 'aria-label': 'Warehouse showcase' });
-  const box = h('div', { style: { position: 'absolute', inset: '0' } });
-  const counter = h('span', {});
-  const card = h('div', { class: 'sc-card' });
-  const bar = h('div', { class: 'sc-progress' });
-  let stop = false;
-  const close = () => { stop = true; document.removeEventListener('keydown', onKey); try { if (document.fullscreenElement) document.exitFullscreen(); } catch { /* ignore */ } view?.dispose(); overlay.remove(); if (location.hash === '#warehouse/showcase') history.replaceState(null, '', '#warehouse'); };
-  const onKey = (e) => { if (e.key === 'Escape') close(); };
-  overlay.append(box, h('div', { class: 'sc-top' }, h('span', {}, 'High-bay showcase · Red parts first, lowest days on hand first · ', counter), h('button', { type: 'button', onclick: close }, 'Exit (Esc)')), card, bar);
-  document.body.append(overlay);
-  document.addEventListener('keydown', onKey);
-  try { await overlay.requestFullscreen?.(); } catch { /* fullscreen is optional */ }
-  let view = null;
-  try { view = (await import('./warehouse3d.js')).mount(box, d, { mode: 'doh', showcase: true }); } catch (e) { card.textContent = `3D unavailable: ${e.message}`; return; }
-  const SLIDE = 8000, ORBIT = 3000;
-  // Loops until Exit — it is meant to run on a TV.
-  for (let i = 0; !stop && order.length; i = (i + 1) % order.length) {
-    const it = order[i], p = byPn.get(it.partNo), v = view.viewOf(it.partNo);
-    counter.textContent = `${i + 1} / ${order.length}`;
-    fill(card, 
-      h('div', { class: 'pn-big' }, it.partNo),
-      h('div', { style: { opacity: '.85', margin: '2px 0 10px' } }, fmt(p?.product)),
-      h('div', { style: { display: 'flex', gap: '22px', alignItems: 'end', flexWrap: 'wrap' } },
-        h('div', {}, h('div', { class: 'doh' }, fmt(it.doh)), h('div', { style: { opacity: '.75', fontSize: '.85rem' } }, 'days on hand')),
-        h('div', {}, dohBadge(it.status), h('div', { style: { marginTop: '6px', fontFamily: 'var(--f-mono)' } }, it.location))),
-    );
-    view.setHighlight(new Set([it.partNo])); // the part in focus keeps its DOH colour, everything else dims
-    const t0 = performance.now();
-    bar.style.transition = 'none'; bar.style.width = '0%'; void bar.offsetWidth; bar.style.transition = `width ${SLIDE}ms linear`; bar.style.width = '100%';
-    if (v?.rowCenter) await view.orbit(v.rowCenter, 16, 8, ORBIT);
-    if (stop) break;
-    await view.focusPart(it.partNo, 1400);
-    const rest = SLIDE - (performance.now() - t0);
-    if (rest > 0) await new Promise((r) => setTimeout(r, rest));
-  }
 }
 
 // ---------------------------------------------------------------- Part lookup
@@ -267,7 +227,7 @@ function partCard(pn) {
         ['Open orders', oo.length ? oo.map((o) => `${o.week}: ${o.qty}`).join(' · ') : '—'],
       ])),
       section('Where & who', null, kv([
-        ['Location', w ? R.whLabel(w) : 'None'], ['Supplier', p ? `${fmt(p.supplierName)} (${fmt(p.supplierCode)})` : '—'], ['Vendor master', vend ? `${vend.vendorName} (${vend.vendorNo})` : '—'],
+        ['Location', w ? h('span', {}, R.whLabel(w), ' ', w.area !== 'NOT-WH' ? h('button', { class: 'btn ghost btn-sm', type: 'button', onclick: () => openPartShowcase(pn) }, 'Show in 3D') : null) : 'None'], ['Supplier', p ? `${fmt(p.supplierName)} (${fmt(p.supplierCode)})` : '—'], ['Vendor master', vend ? `${vend.vendorName} (${vend.vendorNo})` : '—'],
         ['Replaced by', asOld.length ? asOld.map((e) => h('span', {}, pnLink(e.newMaterial), ` (${e.createdOn}) `)) : '—'], ['Replaces', asNew.length ? asNew.map((e) => h('span', {}, pnLink(e.oldMaterial), ` (${e.createdOn}) `)) : '—'],
       ])),
     ),
@@ -298,7 +258,7 @@ export function guide(root, ctx) {
       sc('S6', 'Classify every planned part', '#lifecycle', ['Obsolete wording first (OBSL, OBSO and typos).', `Then open orders × usage in ${cfg().recentDays} days.`, 'Check the parts that joined or left the planning list today.']),
       sc('S7', 'Free up high-bay lanes', '#warehouse', ['Lanes held by obsolete or inactive parts are highlighted.', 'Click a row in the list to fly to it.']),
       sc('S8', 'Answer a floor question', `#lookup/${P.dimSwap[0][0]}`, ['One part number across PFEP, forms, vendor master, planning, open orders, MB51 and the warehouse.', 'Disagreements are marked as mismatch.']),
-      sc('S9', 'Put it on the TV', '#warehouse/showcase', ['Full screen, colored by DOH.', 'Red parts first, lowest days on hand first, 8 seconds each.']),
+      sc('S9', 'Put it on the TV', '#warehouse/showcase', ['Opens on the whole warehouse with the status counts, colored by DOH.', 'Per part: back up to the bird’s-eye view, 360° around its row, then down into the aisle in front of it — Red first, lowest days on hand first.', '‹ Prev · Pause · Next › (← / Space / →), and Export top 5 saves a ~1-minute video.']),
     ),
     section('Design decisions', null, h('ul', {},
       h('li', {}, h('strong', {}, 'Signed form wins. '), 'A different value on a signed form overwrites and is reported; an unsigned or malformed one is held.'),

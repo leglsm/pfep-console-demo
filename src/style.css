@@ -196,14 +196,30 @@ a.q:hover { border-color: var(--accent); }
 .slot-list { max-height: 420px; overflow: auto; }
 .slot-list .tbl td { white-space: nowrap; }
 .slot-list .tbl-wrap { max-height: none; border: 0; }
-.showcase { position: fixed; inset: 0; background: #0b0f15; z-index: 200; }
-.showcase canvas { display: block; }
-.sc-card { position: absolute; left: 32px; bottom: 32px; background: rgba(15, 20, 27, .72); color: #e9edf3; border: 1px solid rgba(255, 255, 255, .14); border-radius: 12px; padding: 16px 20px; min-width: 300px; backdrop-filter: blur(6px); max-width: calc(100vw - 64px); }
-.sc-card .pn-big { font-family: var(--f-mono); font-size: 1.6rem; font-weight: 500; }
-.sc-card .doh { font-family: var(--f-head); font-size: 2.6rem; font-weight: 700; line-height: 1; }
-.sc-top { position: absolute; top: 18px; left: 24px; right: 24px; display: flex; justify-content: space-between; align-items: center; color: #c9d1dc; font-size: .9rem; gap: 10px; }
-.sc-top button { background: rgba(255, 255, 255, .1); color: #fff; border: 1px solid rgba(255, 255, 255, .25); border-radius: 8px; padding: 6px 12px; cursor: pointer; font: inherit; }
-.sc-progress { position: absolute; left: 0; bottom: 0; height: 3px; background: #6d9bff; }
+.showcase { position: fixed; inset: 0; background: #0b0f15; z-index: 200; color: #e9edf3; overflow: hidden; }
+.sc-canvas { position: absolute; inset: 0; }
+.sc-canvas canvas { display: block; }
+.sc-top { position: absolute; top: 0; left: 0; right: 0; padding: 18px 24px 28px; display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap; background: linear-gradient(rgba(11,15,21,.8), rgba(11,15,21,0)); }
+.sc-title-wrap { color: #c9d1dc; font-size: .95rem; display: flex; gap: 14px; align-items: baseline; min-width: 0; }
+.sc-counter { font-family: var(--f-mono); color: #fff; font-weight: 500; }
+.sc-ctrls { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+.sc-btn { background: rgba(255,255,255,.08); color: #fff; border: 1px solid rgba(255,255,255,.25); border-radius: 8px; padding: 7px 14px; cursor: pointer; font: 500 .92rem var(--f-body); }
+.sc-btn:hover { background: rgba(255,255,255,.16); }
+.sc-btn-export { color: #F2A54A; border-color: rgba(242,165,74,.7); }
+.sc-rec { color: #ff6b6b; font-family: var(--f-mono); font-weight: 600; padding: 0 6px; }
+.sc-paused .sc-progress { background: #6b7280; }
+.sc-card { position: absolute; left: 32px; bottom: 32px; background: rgba(15,20,27,.78); border: 1px solid rgba(255,255,255,.14); border-radius: 14px; padding: 20px 26px; min-width: 340px; max-width: min(620px, calc(100vw - 64px)); backdrop-filter: blur(6px); }
+.sc-pn { font-family: var(--f-mono); font-size: 2.2rem; font-weight: 500; line-height: 1.1; }
+.sc-desc { font-size: 1.05rem; opacity: .88; margin: 4px 0 12px; }
+.sc-row { display: flex; gap: 28px; align-items: flex-end; flex-wrap: wrap; }
+.sc-doh { font-family: var(--f-head); font-size: 3.4rem; font-weight: 700; line-height: 1; }
+.sc-dim { font-size: .85rem; opacity: .75; }
+.sc-badge { display: inline-block; border: 2px solid; border-radius: 999px; padding: 1px 12px; font-weight: 600; font-size: .9rem; }
+.sc-loc { font-family: var(--f-mono); font-size: 1.6rem; color: #F2A54A; font-weight: 500; margin-top: 6px; }
+.sc-sp { margin-top: 10px; }
+.sc-progress { position: absolute; left: 0; bottom: 0; height: 4px; width: 0; background: #6d9bff; }
+.sc-toast { position: absolute; left: 50%; top: 80px; transform: translateX(-50%); background: rgba(15,20,27,.92); border: 1px solid rgba(255,255,255,.2); border-radius: 10px; padding: 10px 16px; max-width: calc(100vw - 32px); }
+.btn-sm { padding: 3px 10px; font-size: .8rem; margin-left: 6px; }
 
 @media (max-width: 1000px) {
   .ov-grid, .wh-layout, .grid2 { grid-template-columns: minmax(0, 1fr); }
@@ -222,6 +238,8 @@ a.q:hover { border-color: var(--accent); }
   .wh-canvas { height: 380px; }
   .ov3d { height: 240px; }
   .brand-sub { max-width: 52vw; }
-  .sc-card { left: 16px; right: 16px; bottom: 16px; min-width: 0; }
+  .sc-card { left: 16px; right: 16px; bottom: 16px; min-width: 0; padding: 14px 16px; }
+  .sc-pn { font-size: 1.5rem; } .sc-doh { font-size: 2.4rem; } .sc-loc { font-size: 1.15rem; }
+  .sc-top { padding: 10px 12px 18px; }
 }
 @media (prefers-reduced-motion: reduce) { * { transition: none !important; } }

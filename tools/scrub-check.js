@@ -18,6 +18,9 @@ const textOf = (f) => {
     const wb = XLSX.read(readFileSync(f), { type: 'buffer' });
     return JSON.stringify(wb.Props || {}) + wb.SheetNames.join('\n') + wb.SheetNames.map((n) => XLSX.utils.sheet_to_csv(wb.Sheets[n])).join('\n');
   }
+  // Images and video: compressed pixels are random bytes and trip short terms by chance, so check what can hold
+  // words — embedded text and metadata, i.e. printable runs of 6+ characters (like `strings`). Pixels come from fictional data.
+  if (/\.(png|jpe?g|gif|mp4|webm)$/i.test(f)) return (readFileSync(f).toString('latin1').match(/[\x20-\x7e]{6,}/g) || []).join('\n');
   return readFileSync(f, 'utf8');
 };
 // Vendored libraries are not term-scanned (minified third-party code trips short names);

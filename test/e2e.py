@@ -134,12 +134,33 @@ with sync_playwright() as p:
     check('S7 clicking a slot row shows the part', 'Boxes / lane' in main_text())
     shot('07-warehouse.png')
 
-    # S9 showcase
-    pg.get_by_role('button', name='Start showcase (TV)').click(); pg.wait_for_timeout(3500)
-    check('S9 showcase opens with a Red part first', pg.locator('.showcase .sc-card .badge').first.inner_text() == 'Red')
+    # S9 showcase: opening overview → Next → first (Red) part, flown in and held
+    pg.get_by_role('button', name='Start showcase (TV)').click(); pg.wait_for_timeout(2500)
+    check('S9 showcase opens on the warehouse overview', 'Warehouse overview' in pg.locator('.showcase .sc-card').inner_text())
+    shot('08a-showcase-overview.png')
+    pg.keyboard.press('ArrowRight'); pg.wait_for_timeout(800)
+    check('S9 Next shows a Red part first', pg.locator('.showcase .sc-card .sc-badge').inner_text() == 'Red')
+    c = pg.locator('.showcase .sc-counter').inner_text(); check('S9 counter at 1', c.replace(' ', '').startswith('1/'), c)
+    sc_pn = pg.locator('.showcase .sc-card .sc-pn').inner_text()
+    # README shot: the first high-bay part (the top one may sit in a VLM tower). Wait until the camera is down in the aisle.
+    for _ in range(5):
+        if pg.locator('.showcase .sc-card .sc-loc').inner_text().startswith('HB'): break
+        pg.keyboard.press('ArrowRight'); pg.wait_for_timeout(400)
+    pg.wait_for_function("(() => { const v = window.__pfepShowcase?.view; return v && v._debug.camera.position.y < v._debug.rackTop - 0.5; })()", timeout=30000)
+    pg.wait_for_timeout(1500)
+    pg.keyboard.press(' '); pg.wait_for_timeout(300)
     shot('08-showcase.png')
+    check('S9 Space pauses', 'Play' in pg.locator('.showcase .sc-ctrls').inner_text())
+    check('S9 export button offered', 'Export top 5' in pg.locator('.showcase .sc-ctrls').inner_text())
     pg.keyboard.press('Escape'); pg.wait_for_timeout(500)
     check('S9 Esc closes showcase', pg.locator('.showcase').count() == 0)
+
+    # S9b single-part 3D view from Part lookup
+    go(f'lookup/{sc_pn}')
+    pg.get_by_role('button', name='Show in 3D').click(); pg.wait_for_timeout(1500)
+    check('S9b Show in 3D opens the part view', pg.locator('.showcase').count() == 1 and sc_pn in pg.locator('.showcase .sc-card').inner_text())
+    pg.keyboard.press('Escape'); pg.wait_for_timeout(500)
+    check('S9b Esc closes the part view', pg.locator('.showcase').count() == 0)
 
     # S8 lookup
     go('lookup')

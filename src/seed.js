@@ -449,8 +449,11 @@ export function makeSeed(seed = SEED) {
   // ===== Warehouse locations =====
   const wh = [];
   const hbRows = ['A', 'B', 'C', 'D', 'E', 'F'];
+  // High-bay parts live on level 1 (the floor HU/PU lanes); the dynamic levels above are pallet storage
+  // and are drawn as always full in the 3D view. 6 rows × HB_BAYS bays × 4 lanes.
+  const HB_BAYS = 24;
   // Locations are filled in a shuffled order so parts spread across all rows, as in a real high-bay.
-  const order = Array.from({ length: hbRows.length * 12 * 4 }, (_, i) => i);
+  const order = Array.from({ length: hbRows.length * HB_BAYS }, (_, i) => i);
   for (let i = order.length - 1; i > 0; i--) { const j = Math.floor(rnd() * (i + 1)); [order[i], order[j]] = [order[j], order[i]]; }
   let ptr = 0, lane = 1;
   const placeHB = (r, lanes) => {
@@ -460,7 +463,7 @@ export function makeSeed(seed = SEED) {
       ptr++; lane = 1;
     }
     const slot = order[ptr];
-    const row = hbRows[Math.floor(slot / 48)], bay = Math.floor((slot % 48) / 4) + 1, level = (slot % 4) + 1;
+    const row = hbRows[Math.floor(slot / HB_BAYS)], bay = (slot % HB_BAYS) + 1, level = 1;
     wh.push({ material: r.partNo, area: 'HIGHBAY', row, bay, level, lane, lanes, tray: '', lineside: '' });
     lane += lanes;
     return true;

@@ -6,6 +6,10 @@ A portfolio rebuild of a working tool I built at an automotive exterior-parts pl
 
 ![Overview: data-quality findings and the part-lifecycle 2×2](docs/01-overview.png)
 
+![TV showcase: warehouse overview, then a 360° orbit and a flight down the aisle to an urgent part](docs/showcase.gif)
+
+▶ [Full 51-second clip (MP4)](https://leglsm.github.io/pfep-console-demo/docs/showcase-top5.mp4) — the showcase's *Export top 5*, rendered from the demo data.
+
 ## Problem
 - Packaging data lived in **signed supplier forms, SAP exports and spreadsheets** that disagreed with each other.
 - Launch-time hand entry left **systematic errors**, not typos: part weight typed in kg into a gram column (1,000× too light), one trailer stack value stamped across a whole program, two parts holding each other's dimensions. These skew trailer and warehouse planning.
@@ -17,7 +21,7 @@ A portfolio rebuild of a working tool I built at an automotive exterior-parts pl
 - **Validate every spreadsheet before it lands.** Each cell comes back **OK**, **Coerced** (corrected, with the reason) or **Rejected** (left out). A missing required column, or more than 20% rejected rows, blocks the whole file.
 - **Read supersession (SQ01) as lineage, not status.** Follow old → new over several hops; a fork takes the newer link, a same-day tie or a loop goes to a person. Sync blank fields both ways after a preview.
 - **Classify every part on the planning list.** Obsolete wording first (including typos such as OBSL), then open orders × usage in the last 30 days → Active / Phase-in / Run-out / Inactive. Receipts are not usage.
-- **Use it in the warehouse.** Lanes held by obsolete or inactive parts are the slot-reallocation candidates; a full-screen loop shows Red parts (lowest days on hand first) on the office TV.
+- **Use it in the warehouse.** Lanes held by obsolete or inactive parts are the slot-reallocation candidates; a full-screen showcase for the office TV opens on the whole warehouse, then flies to each Red part (lowest days on hand first) and can export the top five as a video clip.
 
 ## Result
 - Reported the **part-lifecycle 2×2** to my manager.
@@ -35,8 +39,8 @@ A portfolio rebuild of a working tool I built at an automotive exterior-parts pl
 | S5 Old → new part numbers | Supersession | Three-hop chain, fork by date, same-day tie, loop; review → apply sync |
 | S6 Is it still alive? | Lifecycle | Obsolete override, the four quadrants, parts that joined or left the planning list today |
 | S7 Free up high-bay lanes | Warehouse 3D | Highlighted lanes and the candidate list; click a row to fly to it |
-| S8 Answer a floor question | Part lookup | One part number across every source, with mismatches marked |
-| S9 Office TV | Warehouse 3D → *Start showcase* | Red first, lowest days on hand first, 8 s per part, loops |
+| S8 Answer a floor question | Part lookup | One part number across every source, with mismatches marked; *Show in 3D* flies to its lane or VLM tray |
+| S9 Office TV | Warehouse 3D → *Start showcase* | Opens on the whole warehouse with status counts; per part: back to the bird's-eye view → 360° orbit of its row → down into the aisle → hold. ‹ Prev · Pause · Next ›, keys ← Space →, Esc. *Export top 5* saves an MP4/WebM clip |
 
 | Spreadsheet validation | High-bay, slot candidates highlighted |
 |---|---|
@@ -53,6 +57,7 @@ A portfolio rebuild of a working tool I built at an automotive exterior-parts pl
 - **Receipts are not usage** — only consumption movements count, and "no open orders" needs three weekly snapshots in a row.
 - **Quantity is lanes** — one part per lane; boxes per lane = min(4, 26" level height ÷ PU height).
 - **Review, then apply** — every rule produces a preview; nothing changes until you press apply.
+- **The camera never goes through a rack** — it climbs above the rack tops before crossing, then drops straight into the aisle; a test counts frames with the camera inside a rack (must be 0).
 
 ## Real vs demo
 | | In the plant | In this demo |
@@ -69,9 +74,9 @@ Part numbers follow an SAP-style scheme (2… component, 45… finished bumper, 
 - `src/rules.js`, `src/validate.js` — pure rules (form mapping, conflicts, error detection, service-part matching, supersession, sync, lifecycle, slots, DOH, import validation); the same files run in Node tests and in the browser
 - `src/seed.js` — fixed-seed fictional plant with the planted cases listed in `PLANTED`
 - `src/state.js` — one `store` adapter (browser storage, memory fallback); applied changes are saved as batches and replayed
-- `src/warehouse3d.js` — three.js high-bay (instanced boxes, picking, camera moves); `src/pdf-parse.js` — pdf.js text layer
+- `src/warehouse3d.js` — three.js high-bay and VLM towers (instanced boxes, picking, camera moves on a pausable clock); `src/showcase.js` — TV showcase, single-part view and clip export; `src/pdf-parse.js` — pdf.js text layer
 - `lib/` — pinned copies of pdf.js 4.10.38, three.js r170 and SheetJS 0.18.5 (with their licenses); no build step, no CDN
-- `tools/` — generators for the sample PDFs and spreadsheets, and a de-identification check
-- `npm test` — 20 rule tests · `npm run e2e` — 38 browser checks (all scenarios, phone width, dark theme, console errors)
+- `tools/` — generators for the sample PDFs and spreadsheets, a de-identification check, and `make-video.py` (renders the showcase clip frame by frame on a manual clock, then ffmpeg)
+- `npm test` — 20 rule tests · `npm run e2e` — 44 browser checks (all scenarios, phone width, dark theme, console errors)
 
 All data is fictional. No employer data or names are used. Built by [Daniel Lee](https://leglsm.github.io/portfolio/).
