@@ -11,13 +11,17 @@
  *  F-07 Service parts by similar-part match  F-16 DOH status badge
  *  F-08 Supersession chains (fork / cycle)   F-17 Demo guide, reset, export
  *  F-09 Old/new sync: review → apply         F-18 Spreadsheet import validation
+ *  F-19 README video (offline-rendered)      F-20 Warehouse flow: MB51 day replay
+ *  F-21 Day KPIs (data only, no simulation)  F-22 Review PU size (3D vs packaging data)
  *
- * SCHEMA (collections): pkg, vendors, sq01, mb51, matplan, openorders, wh, forms, config
+ * SCHEMA (collections): pkg, vendors, sq01, mb51, matplan, openorders, wh, forms, flowlog, config
+ *   flowlog = MB51 export with entry time + material document (date, time, doc, material, mvt 101/261, qty, unit)
  * Rules live in rules.js / validate.js (pure). Persistence only through state.js `store`.
  */
 import { init, state, onChange, reset, exportJson } from './state.js';
 import * as A from './screens-a.js';
 import * as B from './screens-b.js';
+import * as F from './flow.js';
 import { h, toast } from './ui.js';
 
 const VIEWS = [
@@ -29,6 +33,7 @@ const VIEWS = [
   ['supersession', 'Supersession', B.supersession],
   ['lifecycle', 'Lifecycle', B.lifecycle],
   ['warehouse', 'Warehouse 3D', B.warehouse],
+  ['flow', 'Warehouse flow', F.flowScreen],
   ['lookup', 'Part lookup', B.lookup],
   ['guide', 'Demo guide', B.guide],
 ];

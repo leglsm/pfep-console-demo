@@ -483,6 +483,20 @@ export function dohStatus(m, config) {
   return { status: 'GREEN', reason: `${config.dohRed}–${config.dohOrange} DOH` };
 }
 
+// ---------- R32 PU size review ----------
+// The 3D view fits every box into its lane: one lane wide, at most the rack depth, the stack inside the
+// 26" level. When the packaging data can't be drawn that way, say why — the 3D squeezes the box and
+// never changes the data, because the data is what needs a look.
+export const LANE_W_MM = 650, RACK_DEPTH_MM = 44 * 25.4;
+export function puReview(p, config) {
+  if (!p || !(p.puL > 0) || !(p.puW > 0) || !(p.puH > 0)) return ['No PU dimensions — drawn with a default box'];
+  const out = [], inch = (mm) => Math.round(mm / 25.4 * 10) / 10;
+  if (p.puH / 25.4 > config.levelHeightIn) out.push(`PU height ${inch(p.puH)}" is over the ${config.levelHeightIn}" level — drawn squeezed`);
+  if (p.puW > LANE_W_MM) out.push(`PU width ${p.puW} mm is wider than a lane (${LANE_W_MM} mm) — drawn at lane width`);
+  if (p.puL > RACK_DEPTH_MM) out.push(`PU length ${p.puL} mm is deeper than the rack (44") — drawn at rack depth`);
+  return out;
+}
+
 // ---------- R18 showcase order ----------
 export function showcaseOrder(data, config, asOf) {
   const plan = new Map(data.matplan.filter((m) => m.date === asOf).map((m) => [m.material, m]));

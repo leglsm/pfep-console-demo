@@ -133,7 +133,8 @@ export function warehouse(root, ctx) {
         h('dt', {}, 'PU'), h('dd', {}, p ? `${fmt(p.puL)} × ${fmt(p.puW)} × ${fmt(p.puH)} mm` : '—'),
         h('dt', {}, 'Boxes / lane'), h('dd', {}, p ? `${Math.max(1, R.stackCount(p.puH, cfg()))} (level ${cfg().levelHeightIn}" ÷ PU height, max ${cfg().maxStack})` : '—'),
         h('dt', {}, 'Lifecycle'), h('dd', {}, s ? lifeBadge(s.life === 'none' ? 'Not on plan' : s.life) : '—'),
-        h('dt', {}, 'DOH'), h('dd', {}, s ? h('span', {}, fmt(s.dohValue), ' ', dohBadge(s.doh)) : '—')),
+        h('dt', {}, 'DOH'), h('dd', {}, s ? h('span', {}, fmt(s.dohValue), ' ', dohBadge(s.doh)) : '—'),
+        w && w.area === 'HIGHBAY' && R.puReview(p, cfg()).length ? [h('dt', {}, '3D'), h('dd', { class: 'review-pu' }, '⚠ Review PU size: ', R.puReview(p, cfg()).join(' · '))] : null),
       h('p', {}, h('a', { href: `#lookup/${pn}` }, 'Open part lookup →')),
     );
   };
@@ -221,6 +222,7 @@ function partCard(pn) {
       section('Packaging (PFEP)', p ? (p.signedForm ? `Signed form ${p.signedForm}` : 'No signed form on file') : 'No PFEP row', p ? kv([
         ['PU', `${p.puType || '—'} · ${fmt(p.puL)} × ${fmt(p.puW)} × ${fmt(p.puH)} mm`], ['Parts / PU', fmt(p.partsPerPu)], ['PU / HU', fmt(p.puPerHu)], ['HU type', fmt(p.huType)],
         ['Stack trailer / WH', `${fmt(p.stackTrailer)} / ${fmt(p.stackWarehouse)}`], ['Part weight', p.weightG == null ? '—' : `${fmt(p.weightG)} g`], ['Returnable', fmt(p.returnable)], ['Flags', p.flags?.length ? p.flags.map((f) => badge(f, 'b-orange')) : '—'],
+        ...(w && w.area === 'HIGHBAY' && R.puReview(p, c).length ? [['3D', h('span', { class: 'review-pu' }, '⚠ Review PU size: ', R.puReview(p, c).join(' · '))]] : []), // R32
       ]) : empty('—')),
       section('Status', lc ? lc.reason : 'Not on today’s planning list', kv([
         ['Lifecycle', lc ? lifeBadge(lc.state) : '—'], ['DOH', m0 ? h('span', {}, fmt(m0.doh), ' ', dohBadge(dohS.status), ' ', h('span', { class: 'muted small' }, dohS.reason)) : '—'], ['Stock', m0 ? fmt(m0.stock) : '—'], ['Planner', m0?.planner],
@@ -259,6 +261,8 @@ export function guide(root, ctx) {
       sc('S7', 'Free up high-bay lanes', '#warehouse', ['Lanes held by obsolete or inactive parts are highlighted.', 'Click a row in the list to fly to it.']),
       sc('S8', 'Answer a floor question', `#lookup/${P.dimSwap[0][0]}`, ['One part number across PFEP, forms, vendor master, planning, open orders, MB51 and the warehouse.', 'Disagreements are marked as mismatch.']),
       sc('S9', 'Put it on the TV', '#warehouse/showcase', ['Opens on the whole warehouse with the status counts, colored by DOH.', 'Per part: back up to the bird’s-eye view, 360° around its row, then down into the aisle in front of it — Red first, lowest days on hand first.', '‹ Prev · Pause · Next › (← / Space / →), and Export top 5 saves a ~1-minute video.']),
+      sc('S11', 'Replay a day of goods movements', '#flow', ['Show day KPIs: trucks, receipt lines, where they went (high-bay / VLM / floor), busiest hour, trucks on site at once — from the data only.', 'The parts that came in with no location are the slotting candidates.', 'Play replay: one truck per material document, forklifts put each line away, tuggers take goods issues to the line. Space, 1 / 2 / 4, C, Esc.']),
+      sc('S12', 'Let the 3D check the data', '#lookup/20213438', ['This part’s PU is taller than the 26" level: the 3D squeezes the box and says Review PU size.', 'The packaging record is not changed — the data is what needs a look.']),
     ),
     section('Design decisions', null, h('ul', {},
       h('li', {}, h('strong', {}, 'Signed form wins. '), 'A different value on a signed form overwrites and is reported; an unsigned or malformed one is held.'),

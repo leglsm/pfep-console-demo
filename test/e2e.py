@@ -26,7 +26,10 @@ def check(name, ok, detail=''):
     results.append((name, bool(ok), detail))
     print(('PASS ' if ok else 'FAIL ') + name + (f' — {detail}' if detail and not ok else ''))
 
-VIEWS = ['overview', 'pfep', 'imports', 'forms', 'fixes', 'supersession', 'lifecycle', 'warehouse', 'lookup', 'guide']
+VIEWS = ['overview', 'pfep', 'imports', 'forms', 'fixes', 'supersession', 'lifecycle', 'warehouse', 'flow', 'lookup', 'guide']
+# planted cases straight from the seed (same SEED -> same data)
+import subprocess
+PLANTED = json.loads(subprocess.run(['node', '-e', "import('./src/seed.js').then(m => console.log(JSON.stringify(m.makeSeed().PLANTED)))"], cwd=ROOT, capture_output=True, text=True, check=True).stdout)
 
 def fonts(route):
     if FONT_CSS and 'fonts.googleapis.com' in route.request.url:
@@ -161,6 +164,32 @@ with sync_playwright() as p:
     check('S9b Show in 3D opens the part view', pg.locator('.showcase').count() == 1 and sc_pn in pg.locator('.showcase .sc-card').inner_text())
     pg.keyboard.press('Escape'); pg.wait_for_timeout(500)
     check('S9b Esc closes the part view', pg.locator('.showcase').count() == 0)
+
+    # S11 Warehouse flow: day KPIs from the data, then the replay
+    go('flow')
+    t = main_text()
+    check('S11 flow tab lists days with receipts and issues', 'receipt lines' in t and 'goods issues (261)' in t)
+    pg.get_by_role('button', name='Show day KPIs (skip replay)').click(); pg.wait_for_timeout(500)
+    t = main_text()
+    check('S11 day KPIs shown', all(k in t for k in ['Inbound trucks', 'Receipt lines (101)', 'To floor storage', 'Busiest hour', 'Trucks on site at once (est.)', 'Red parts received']))
+    check('S11 no-location and Red tables', 'Received with no location' in t and 'Red parts that came in this day' in t)
+    check('S11 KPIs leave simulated values out', 'not data' in t and 'Travel time' not in t)
+    shot('12-flow-kpis.png')
+    pg.get_by_role('button', name='Play replay (TV)').click()
+    pg.wait_for_function("() => window.__flowDebug && window.__flowDebug.st && window.__flowDebug.st.arrived > 0", timeout=90000)
+    pg.wait_for_timeout(4000)
+    a = pg.evaluate("({ ...window.__flowDebug.audit, done: window.__flowDebug.st.done })")
+    check('S11 replay: trucks arrive and the day clock runs', a['samples'] > 20, str(a))
+    check('S11 camera and vehicles never inside a rack', a['cameraInside'] == 0 and a['vehicleInside'] == 0, str(a))
+    shot('13-flow-replay.png')
+    pg.keyboard.press(' '); pg.wait_for_timeout(300)
+    check('S11 Space pauses the replay', 'Play' in pg.locator('.showcase .sc-ctrls').inner_text())
+    pg.keyboard.press('Escape'); pg.wait_for_timeout(500)
+    check('S11 Esc closes the replay', pg.locator('.showcase').count() == 0)
+
+    # S12 PU size review (R32) in Part lookup
+    go('lookup/' + PLANTED['puReview']['tall'])
+    check('S12 lookup flags a PU the 3D cannot draw true to size', 'Review PU size' in main_text() and 'over the 26" level' in main_text())
 
     # S8 lookup
     go('lookup')

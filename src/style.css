@@ -208,6 +208,10 @@ a.q:hover { border-color: var(--accent); }
 .sc-btn-export { color: #F2A54A; border-color: rgba(242,165,74,.7); }
 .sc-rec { color: #ff6b6b; font-family: var(--f-mono); font-weight: 600; padding: 0 6px; }
 .sc-paused .sc-progress { background: #6b7280; }
+/* R32 review line in Part lookup / 3D panel */
+.review-pu { color: #c4721f; font-weight: 600; }
+/* R32 review line on the showcase card */
+.sc-review { margin-top: 10px; color: #f0a35a; font-weight: 600; font-size: .95rem; max-width: 34ch; }
 .sc-card { position: absolute; left: 32px; bottom: 32px; background: rgba(15,20,27,.78); border: 1px solid rgba(255,255,255,.14); border-radius: 14px; padding: 20px 26px; min-width: 340px; max-width: min(620px, calc(100vw - 64px)); backdrop-filter: blur(6px); }
 .sc-pn { font-family: var(--f-mono); font-size: 2.2rem; font-weight: 500; line-height: 1.1; }
 .sc-desc { font-size: 1.05rem; opacity: .88; margin: 4px 0 12px; }
@@ -243,3 +247,26 @@ a.q:hover { border-color: var(--accent); }
   .sc-top { padding: 10px 12px 18px; }
 }
 @media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
+
+/* ---------- Warehouse flow ---------- */
+.flow-summary { margin: .6rem 0 .2rem; }
+.flow-day select { margin-left: 4px; padding: 6px 8px; border-radius: 6px; border: 1px solid var(--line); background: var(--panel); color: var(--ink); font: inherit; max-width: 100%; }
+.flow-day { display: inline-flex; align-items: center; gap: 4px; max-width: 100%; }
+.flow-kpis .stats { margin-bottom: 10px; }
+.stat-bad .stat-value { color: #c24a36; }
+.stat-red .stat-value { color: #d64545; }
+.fl-clock { font-family: var(--f-mono); font-size: 1.6rem; color: #fff; font-weight: 600; }
+.fl-stats { min-width: 0; }
+.fl-kpis { display: flex; gap: 26px; flex-wrap: wrap; }
+.fl-n { font-family: var(--f-head); font-size: 2.4rem; font-weight: 700; line-height: 1; }
+.fl-n small { font-size: .45em; opacity: .7; }
+.fl-split { margin-top: 10px; }
+.fl-ticker { position: absolute; right: 32px; bottom: 32px; width: min(520px, 40vw); font: 500 .88rem var(--f-mono); color: #d7dde6; background: rgba(15,20,27,.7); border: 1px solid rgba(255,255,255,.12); border-radius: 12px; padding: 12px 14px; display: flex; flex-direction: column; gap: 4px; }
+.fl-ticker:empty { display: none; }
+.fl-t { color: #f2a54a; }
+.fl-note { position: absolute; left: 24px; top: 74px; font-size: .85rem; color: #c9d1dc; max-width: min(760px, calc(100vw - 48px)); }
+@media (max-width: 760px) {
+  .fl-ticker { display: none; }
+  .fl-n { font-size: 1.7rem; }
+  .fl-note { top: 110px; }
+}

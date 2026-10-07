@@ -2,6 +2,8 @@
 // Every company, person, program and part number here is invented.
 // Same SEED -> same data, so tests and screenshots are reproducible.
 
+import { makeFlowLog } from './flow-data.js';
+
 export const SEED = 20261005;
 export const ASOF = '2026-09-30';
 
@@ -495,9 +497,25 @@ export function makeSeed(seed = SEED) {
   // vendor master export: material -> vendor
   const vendorMaster = pkg.filter((r) => r.supplierCode).map((r) => ({ material: r.partNo, vendorNo: r.supplierCode, vendorName: r.supplierName }));
 
+  // R32 story: a few high-bay parts whose PU size the 3D view cannot draw true to size
+  // (taller than the 26" level, wider than a lane, deeper than the rack, no dimensions). Chosen without
+  // random draws and among parts with no form record or other planted case, so nothing else moves.
+  const plantedPns = new Set(JSON.stringify(PLANTED).match(/\d{8}/g));
+  const formPns = new Set(forms.map((f) => f.partNo));
+  const sq01Pns = new Set(sq01.flatMap((x) => [x.oldMaterial, x.newMaterial]));
+  const calm = wh.filter((w) => w.area === 'HIGHBAY' && !plantedPns.has(w.material) && !formPns.has(w.material) && !sq01Pns.has(w.material))
+    .map((w) => w.material).sort();
+  const pkgOf = (pn) => pkg.find((r) => r.partNo === pn);
+  const [pTall, pWide, pDeep, pNone] = [calm[3], calm[11], calm[19], calm[27]].map(pkgOf);
+  pTall.puH = 720; pWide.puW = 780; pDeep.puL = 1300; pNone.puL = null; pNone.puW = null; pNone.puH = null;
+  PLANTED.puReview = { tall: pTall.partNo, wide: pWide.partNo, deep: pDeep.partNo, noDims: pNone.partNo };
+
+  // MB51 export with entry time + material document for the Warehouse flow tab (own random stream)
+  const flowlog = makeFlowLog({ pkg, wh, matplan, asOf: ASOF }, seed);
+
   return {
     asOf: ASOF, config: { ...CONFIG }, company: COMPANY, plant: PLANT,
-    pkg, vendors: vendorMaster, supplierMaster: vendors, sq01, mb51, matplan, openorders, wh, forms,
+    pkg, vendors: vendorMaster, supplierMaster: vendors, sq01, mb51, matplan, openorders, wh, forms, flowlog,
     newForms: NEW_FORMS, PLANTED,
   };
 }

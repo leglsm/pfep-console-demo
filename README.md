@@ -2,7 +2,7 @@
 
 **Live demo:** https://leglsm.github.io/pfep-console-demo/ · static web page, fictional data, no login
 
-A portfolio rebuild of a working tool I built at an automotive exterior-parts plant (current role, Supply Chain Engineer); the requirements came from my manager and the material handlers on the floor. It keeps one package database — PFEP, *plan for every part* — honest when the inputs disagree: signed packaging forms, SAP exports and spreadsheets from the material team. Then it uses the cleaned data for two decisions: which parts are still alive, and which high-bay lanes can be freed.
+A portfolio rebuild of a working tool I built at an automotive exterior-parts plant (current role, Supply Chain Engineer); the requirements came from my manager and the material handlers on the floor. It keeps one package database — PFEP, *plan for every part* — honest when the inputs disagree: signed packaging forms, SAP exports and spreadsheets from the material team. Then it uses the cleaned data for two decisions: which parts are still alive, and which high-bay lanes can be freed. A *Warehouse flow* tab replays a day of SAP goods movements (MB51) in the same 3D warehouse and reads the day's receiving KPIs straight from the data.
 
 ![Overview: data-quality findings and the part-lifecycle 2×2](docs/01-overview.png)
 
@@ -22,6 +22,8 @@ A portfolio rebuild of a working tool I built at an automotive exterior-parts pl
 - **Read supersession (SQ01) as lineage, not status.** Follow old → new over several hops; a fork takes the newer link, a same-day tie or a loop goes to a person. Sync blank fields both ways after a preview.
 - **Classify every part on the planning list.** Obsolete wording first (including typos such as OBSL), then open orders × usage in the last 30 days → Active / Phase-in / Run-out / Inactive. Receipts are not usage.
 - **Use it in the warehouse.** Lanes held by obsolete or inactive parts are the slot-reallocation candidates; a full-screen showcase for the office TV opens on the whole warehouse, then flies to each Red part (lowest days on hand first) and can export the top five as a video clip.
+- **Let the 3D check the data.** When a box can't be drawn true to size — taller than the 26" level, wider than a lane, deeper than the rack, no dimensions — the 3D fits it into the lane and the card says *Review PU size*. The packaging data is not changed: it is the data that needs a look.
+- **Replay a day of goods movements.** One material document = one truck at the dock; every receipt line (101) is put away to the part's current location — high-bay, VLM, or floor storage when the part has none; goods issues (261) become tugger runs to the line. *Show day KPIs* gives the same day as numbers without the replay.
 
 ## Result
 - Reported the **part-lifecycle 2×2** to my manager.
@@ -40,6 +42,8 @@ A portfolio rebuild of a working tool I built at an automotive exterior-parts pl
 | S6 Is it still alive? | Lifecycle | Obsolete override, the four quadrants, parts that joined or left the planning list today |
 | S7 Free up high-bay lanes | Warehouse 3D | Highlighted lanes and the candidate list; click a row to fly to it |
 | S8 Answer a floor question | Part lookup | One part number across every source, with mismatches marked; *Show in 3D* flies to its lane or VLM tray |
+| S11 Replay a day of MB51 | Warehouse flow | *Show day KPIs*: trucks, receipt lines, high-bay / VLM / floor split, receiving window, busiest hour, trucks on site at once, Red parts received, plus the parts that had no location. *Play replay*: trucks at the doors, forklifts putting away, tuggers to the line; Space, 1 / 2 / 4, C (camera), Esc |
+| S12 3D vs packaging data | Part lookup or the showcase card | *Review PU size* on a part the 3D can't draw true to size — e.g. [20213438](https://leglsm.github.io/pfep-console-demo/#lookup/20213438) (taller than the level), [22263037](https://leglsm.github.io/pfep-console-demo/#lookup/22263037) (no dimensions) |
 | S9 Office TV | Warehouse 3D → *Start showcase* | Opens on the whole warehouse with status counts; per part: back to the bird's-eye view → 360° orbit of its row → down into the aisle → hold. ‹ Prev · Pause · Next ›, keys ← Space →, Esc. *Export top 5* saves an MP4/WebM clip |
 
 | Spreadsheet validation | High-bay, slot candidates highlighted |
@@ -47,6 +51,23 @@ A portfolio rebuild of a working tool I built at an automotive exterior-parts pl
 | ![Imports](docs/02-imports.png) | ![High-bay](docs/07a-highbay.png) |
 | **Signed form ingest** | **TV showcase** |
 | ![Form ingest](docs/03-forms.png) | ![Showcase](docs/08-showcase.png) |
+
+## Warehouse flow — one day of MB51 in 3D
+
+![Warehouse flow: inbound trucks at the dock doors, forklifts putting pallets away to their high-bay lanes, a tugger running to the line](docs/flow.gif)
+
+▶ [40-second clip of the afternoon peak (MP4)](https://leglsm.github.io/pfep-console-demo/docs/flow-day.mp4) — rendered frame by frame from the demo data.
+
+| Day KPIs (from the data) | Replay |
+|---|---|
+| ![Day KPIs](docs/12-flow-kpis.png) | ![Replay](docs/13-flow-replay.png) |
+
+**Assumptions and limits** — what the replay can and can't tell you:
+- *Time of entry* is when the line was entered in SAP, not when it was physically moved.
+- One material document = one truck, arriving 10 minutes before its first line: a simplification.
+- The put-away destination is the part's **current** location, not the transfer-order history.
+- Dock, line-side positions, the number of forklifts and the travel speeds are presentation choices, not measurements. That is why travel time and dock waiting time are **not** among the KPIs — they would change with the assumed fleet, so they are not data.
+- It does **not** replace a time study (MOD / MOST). Volumes, peaks and dock occupancy come from the data; how many drivers or trucks a shift needs takes standard times or measurement. The next step would be standard times per motion (pick, travel per metre, lift per metre, set down) × route distance × volume → *forklift hours* and *trucks needed*.
 
 ## Design decisions
 - **Signed form wins** — a different value on a signed form overwrites and is reported; unsigned or malformed values are held.
@@ -57,6 +78,9 @@ A portfolio rebuild of a working tool I built at an automotive exterior-parts pl
 - **Receipts are not usage** — only consumption movements count, and "no open orders" needs three weekly snapshots in a row.
 - **Quantity is lanes** — one part per lane; boxes per lane = min(4, 26" level height ÷ PU height).
 - **Review, then apply** — every rule produces a preview; nothing changes until you press apply.
+- **Simulated values never mix with data** — a day without goods issues gets a tugger loop marked SIMULATED, and the KPI cards leave out anything that depends on the assumed fleet.
+- **The clock follows the work** — the replay of a busy day lasts longer (lines × 26 s ÷ forklifts) instead of speeding the clock up until the dock queue explodes and the picture lies.
+- **3D shows, the data decides** — *Review PU size* flags a box the 3D had to squeeze; it never edits the packaging record.
 - **The camera never goes through a rack** — it climbs above the rack tops before crossing, then drops straight into the aisle; a test counts frames with the camera inside a rack (must be 0).
 
 ## Real vs demo
@@ -66,6 +90,7 @@ A portfolio rebuild of a working tool I built at an automotive exterior-parts pl
 | Storage | Server database | Your browser only; changes reset after 6 hours |
 | Spreadsheets | Uploaded as they arrive | Eight built-in samples with planted format problems |
 | Forms | Supplier PDFs | Eight sample PDFs; you can also upload one (read in the browser, never sent) |
+| Goods movements | MB51 export with entry time and material document | 22 working days of fictional receipts (101) and issues (261); dock, line-side and fleet are schematic |
 | Thresholds | Plant settings | Red < 5 DOH, Orange > 22 DOH, usage window 30 days, 3 weeks of zero open orders |
 
 Part numbers follow an SAP-style scheme (2… component, 45… finished bumper, 75… service/trading part, 6… returnable container) and are invented.
@@ -74,9 +99,9 @@ Part numbers follow an SAP-style scheme (2… component, 45… finished bumper, 
 - `src/rules.js`, `src/validate.js` — pure rules (form mapping, conflicts, error detection, service-part matching, supersession, sync, lifecycle, slots, DOH, import validation); the same files run in Node tests and in the browser
 - `src/seed.js` — fixed-seed fictional plant with the planted cases listed in `PLANTED`
 - `src/state.js` — one `store` adapter (browser storage, memory fallback); applied changes are saved as batches and replayed
-- `src/warehouse3d.js` — three.js high-bay and VLM towers (instanced boxes, picking, camera moves on a pausable clock); `src/showcase.js` — TV showcase, single-part view and clip export; `src/pdf-parse.js` — pdf.js text layer
+- `src/warehouse3d.js` — three.js high-bay and VLM towers (instanced boxes, picking, camera moves on a pausable clock); `src/showcase.js` — TV showcase, single-part view and clip export; `src/flow-plan.js` (pure: day plan, tugger runs, KPIs) + `src/flow.js` (Warehouse flow tab and replay) + `src/flow-data.js` (fictional MB51 days); `src/pdf-parse.js` — pdf.js text layer
 - `lib/` — pinned copies of pdf.js 4.10.38, three.js r170 and SheetJS 0.18.5 (with their licenses); no build step, no CDN
-- `tools/` — generators for the sample PDFs and spreadsheets, a de-identification check, and `make-video.py` (renders the showcase clip frame by frame on a manual clock, then ffmpeg)
-- `npm test` — 20 rule tests · `npm run e2e` — 44 browser checks (all scenarios, phone width, dark theme, console errors)
+- `tools/` — generators for the sample PDFs and spreadsheets, a de-identification check, `make-video.py` and `make-flow-video.py` (render the clips frame by frame on a manual clock, then ffmpeg)
+- `npm test` — 26 rule tests · `npm run e2e` — 53 browser checks (all scenarios, phone width, dark theme, console errors)
 
 All data is fictional. No employer data or names are used. Built by [Daniel Lee](https://leglsm.github.io/portfolio/).

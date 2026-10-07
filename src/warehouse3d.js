@@ -321,7 +321,8 @@ export function mount(el, data, opts = {}) {
     tick(dt) { if (alive) step(dt); }, // manual clock (offline video rendering)
     orbitHeight, boxCount: boxes.length, partCount: parts.size,
     canvas: renderer.domElement,
-    _debug: { camera, target, boxes, rackTop: RACK_TOP_MM * S, inRack: (p) => insideRack(p) },
+    _debug: { camera, target, boxes, rackTop: RACK_TOP_MM * S, inRack: (p) => insideRack(p), scene, parts, // read-only: Warehouse flow builds on the scene
+      layout: { rowLenMM, maxX, depthMM, vlmZMin, aisleMM: AISLE_MM, vlmTopMM: VLM_H_MM, towers: [...towers.values()].map((t) => t.x), vlmW: VLM_W_MM } },
     dispose() {
       alive = false; cancelAnimationFrame(raf); ro.disconnect(); controls.dispose();
       disposables.forEach((d) => { try { d.dispose(); } catch { /* ignore */ } });

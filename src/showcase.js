@@ -40,6 +40,7 @@ function slideInfo(it, vlmTowerOf) {
     partNo: it.partNo, product: it.product || '—', doh: it.doh === null || it.doh === undefined ? '—' : String(it.doh),
     color: COLOR[it.status] || '#e9edf3', badge: BADGE[it.status] || it.status, locBig: loc.big, locSmall: loc.small,
     sp: [it.supplier, it.planner && `Planner ${it.planner}`].filter(Boolean).join(' · '),
+    review: it.wh && it.wh.area === 'HIGHBAY' ? R.puReview(D().pkg.find((r) => r.partNo === it.partNo), cfg()) : [], // R32
   };
 }
 const cardEl = (f) => [
@@ -50,6 +51,7 @@ const cardEl = (f) => [
     h('div', {}, h('span', { class: 'sc-badge', style: { borderColor: f.color, color: f.color } }, f.badge),
       h('div', { class: 'sc-loc' }, f.locBig), h('div', { class: 'sc-dim' }, f.locSmall))),
   f.sp ? h('div', { class: 'sc-dim sc-sp' }, f.sp) : null,
+  f.review && f.review.length ? h('div', { class: 'sc-review', title: 'The 3D box is fitted to the lane; the packaging data is not changed' }, '⚠ Review PU size: ', f.review.join(' · ')) : null,
 ];
 const countsEl = (list) => {
   const c = list.reduce((a, x) => { a[x.status] = (a[x.status] || 0) + 1; return a; }, {});
@@ -80,7 +82,7 @@ function drawRecFrame(ctx, src, s) {
   ctx.font = font(22); ctx.fillStyle = 'rgba(201,209,220,.8)'; const brand = 'PFEP Console demo · fictional data'; ctx.fillText(brand, W - 44 - ctx.measureText(brand).width, 64);
   ctx.shadowBlur = 0;
   const x = 48, cw = 940, pad = 40, f = s.info;
-  const ch = s.overview ? 330 : 440 + (f && f.sp ? 40 : 0);
+  const ch = s.overview ? 330 : 440 + (f && f.sp ? 40 : 0) + (f && f.review && f.review.length ? 40 : 0);
   const y = H - 56 - ch;
   ctx.fillStyle = 'rgba(15,20,27,.8)'; ctx.strokeStyle = 'rgba(255,255,255,.16)'; ctx.lineWidth = 2; rr(x, y, cw, ch, 16); ctx.fill(); ctx.stroke();
   ctx.shadowColor = 'rgba(0,0,0,.5)'; ctx.shadowBlur = 6;
@@ -109,6 +111,7 @@ function drawRecFrame(ctx, src, s) {
     ctx.font = font(54, 500, 'mono'); ctx.fillStyle = '#F2A54A'; ctx.fillText(fit(f.locBig, x + cw - pad - bx), bx, cy - 18);
     ctx.font = font(26); ctx.fillStyle = 'rgba(233,237,243,.75)'; ctx.fillText(fit(f.locSmall, x + cw - pad - bx), bx, cy + 22);
     if (f.sp) ctx.fillText(fit(f.sp, cw - 2 * pad), x + pad, cy + 92);
+    if (f.review && f.review.length) { ctx.font = font(26, 600); ctx.fillStyle = '#f0a35a'; ctx.fillText(fit(`⚠ Review PU size: ${f.review.join(' · ')}`, cw - 2 * pad), x + pad, cy + (f.sp ? 132 : 92)); }
   }
   ctx.shadowBlur = 0;
   ctx.fillStyle = '#6d9bff'; ctx.fillRect(0, H - 8, W * Math.max(0, Math.min(1, s.progress)), 8);
